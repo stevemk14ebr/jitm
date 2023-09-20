@@ -227,9 +227,8 @@ BOOL _CDNet::LoadTablesInfo(
     } TableInfo, *PTableInfo;
 
     std::vector<PTableInfo> Tables;
-    for (std::vector<DWORD>::iterator it = this->DNTypes.begin(); it != this->DNTypes.end(); ++it)
+    for (DWORD nTokenType : this->DNTypes)
     {
-        DWORD nTokenType = (*it);
         if (_IsTokenTypeValid(nTokenType, nMaskLow, nMaskHigh))
         {
             PTableInfo ti = new TableInfo();
@@ -240,16 +239,22 @@ BOOL _CDNet::LoadTablesInfo(
         }
     }
 
+    std::cout << "[*] found " << Tables.size() << " tables" << std::endl;
+
     DWORD nCount = 0;
-    for (std::vector<PTableInfo>::iterator it = Tables.begin(); it != Tables.end(); ++it)
+    for (PTableInfo& table : Tables)
     {
         DWORD nNumberOfRows = 0;
         DWORD nOffset = nStartOfNumberOfRows + nCount * sizeof(DWORD);
-        if (!ReadFile(hFile, &nNumberOfRows, sizeof(DWORD), &nBytes, NULL))
+        if (!ReadFile(hFile, &nNumberOfRows, sizeof(DWORD), &nBytes, NULL)) {
+            std::cout << "[!] Error reading table rows" << std::endl;
             return FALSE;
-        (*it)->nNumberOfRows = nNumberOfRows;
+        }
+        table->nNumberOfRows = nNumberOfRows;
         nCount += 1;
     }
+
+    std::cout << "[*] Done reading table row counts " << std::endl;
 
     DWORD nStartOfTablesData = nStartOfNumberOfRows + nCount * sizeof(DWORD);
     DWORD nCurrentOffset = nStartOfTablesData;
@@ -308,6 +313,8 @@ BOOL _CDNet::LoadTablesInfo(
         Tables.pop_back();
         delete ti;
     }
+
+    std::cout << "[*] Tables info loading complete..." << std::endl;
     return this->Methods.size() > 0;
 }
 

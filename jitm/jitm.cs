@@ -62,6 +62,7 @@ namespace jitm
         {
             Console.WriteLine("[!] Waiting for {0} miliseconds", nTimeout);
             System.Threading.Thread.Sleep(nTimeout);
+            Console.WriteLine("[+] Timeout expired, dumping module");
             Fini();
             Environment.Exit(0);
         }
@@ -73,9 +74,7 @@ namespace jitm
 
             if (args.Length == 2) nTimeout = int.Parse(args[1]);
 
-            // Start a worker thread to wait for the main thread and call Fini()
-            Thread thread = new Thread(mythread);
-            thread.Start();
+ 
             string pFilepath;
             if (Path.IsPathRooted(args[0]))
             {
@@ -88,11 +87,19 @@ namespace jitm
                 pFilepath = Path.Combine(path);
             }
 
+            Console.WriteLine("[+] Initializing with {0}", pFilepath);
             Init(pFilepath);
+
             if (!Hook())
             {
                 Console.WriteLine("[E] Failed to hook");
+            } else{
+                Console.WriteLine("[+] Hooked ok!");
             }
+
+            // Start a worker thread to wait for the main thread and call Fini()
+            Thread thread = new Thread(mythread);
+            thread.Start();
 
             TargetAssembly = Assembly.LoadFile(pFilepath);
             Console.WriteLine("[+] Assembly loaded from {0}", pFilepath);

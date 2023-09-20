@@ -333,6 +333,8 @@ extern "C" __declspec(dllexport) BOOL Hook()
         }
         return FALSE;
     }
+
+    std::cout << "[+] jit Compile Hooked!" << std::endl;
     return TRUE;
 }
 
