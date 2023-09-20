@@ -9,7 +9,7 @@
 #include "CDNet.h"
 
 #include <polyhook2/ErrorLog.hpp>
-#include <polyhook2/CapstoneDisassembler.hpp>
+#include <polyhook2/ZydisDisassembler.hpp>
 
 #ifdef _WIN64
 #include <polyhook2/Detour/x64Detour.hpp>
@@ -28,7 +28,7 @@
 #define LOG_FILENAME  "jitm.log"
 
 uint64_t                    origCompileMethod = 0;
-PLH::CapstoneDisassembler   gDis(PLH::Arch);
+PLH::ZydisDisassembler      gDis(PLH::Arch);
 std::shared_ptr<PLH::IHook> gHook;
 
 CRITICAL_SECTION            gCS;
@@ -316,10 +316,9 @@ extern "C" __declspec(dllexport) BOOL Hook()
     PCompileMethod pfnCompileMethod = pJit->vtbl.compileMethod;
     PLH::ErrorLog::singleton().setLogLevel(PLH::ErrorLevel::WARN);
     gHook.reset(new PLH::GDetour(
-        (char *)(*((DWORD *)pfnCompileMethod)),
-        (char *)&MyCompileMethod,
-        &origCompileMethod,
-        gDis));
+        (uint64_t)(*((DWORD *)pfnCompileMethod)),
+        (uint64_t)&MyCompileMethod,
+        &origCompileMethod));
 
     gbHooked = gHook->hook();
     if (!gbHooked)

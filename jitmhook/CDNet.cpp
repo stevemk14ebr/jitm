@@ -121,7 +121,6 @@ BOOL _CDNet::Parse()
     if (!ReadFile(hFile, &oNT, sizeof(oNT), &nBytesRead, NULL))
         return FALSE;
 
-
     // Parse the section header
     IMAGE_SECTION_HEADER SectionHeader = { 0 };
     for (int i = 0; i < oNT.FileHeader.NumberOfSections; ++i)
